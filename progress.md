@@ -170,11 +170,31 @@
   - src/conductor/agents/master_agent.py, server.py, src/conductor/api/{chat.py, threads.py}
   - src/conductor/managers/{__init__.py, git_manager.py, memory_manager.py, worker_runner.py}
 
+### Production Readiness: Quota Handling
+- **Status:** complete
+- **Started:** 2026-03-13 01:26
+- **Completed:** 2026-03-13 09:15
+- **Commits:** `27dd910`, `8b70bb3`, `12249a6`
+- Actions taken:
+  - Task 1: WorkerMonitor quota exhaustion detection — 5 error patterns, QuotaExhaustedError, quota_exhausted flag
+  - Task 2: SessionDispatcher exponential backoff retry (30s/60s/120s), pause mechanism, resume_dispatch()
+  - Task 3: WebSocket broadcast_quota_event() — structured event to session subscribers
+  - Task 4: POST /api/threads/dispatch/{session_id}/resume API endpoint + dispatcher registry in deps.py
+  - Task 5: Frontend QuotaBanner component, pending_quota status color in task cards, resumeDispatch API client
+  - Task 6: 156 tests passing, ruff check clean, TypeScript zero errors
+- Files created:
+  - web/src/components/threads/quota-banner.tsx
+- Files modified:
+  - src/conductor/managers/{worker_runner.py, session_dispatcher.py}
+  - src/conductor/api/{websockets.py, threads.py, deps.py}
+  - web/src/{App.tsx, lib/api.ts, components/threads/task-card.tsx}
+  - tests/{test_worker_runner.py, test_session_dispatcher.py, test_api_websockets.py}
+
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | All core phases (1-7) complete |
+| Where am I? | All phases complete including quota handling |
 | Where am I going? | Project implementation complete |
 | What's the goal? | 从零实现 Code Conductor 多 Agent 编排系统 |
-| What have I learned? | callable 是 builtin 函数不是类型; lru_cache 用于 FastAPI 单例 DI; TestClient monkeypatch 需要 cache_clear() 配合; extract_memory_updates 用 tuple 返回值同时清理和提取 |
-| What have I done? | Phase 1-7 全部完成，145 backend tests 通过，前端 MVP 就绪，安全审查完成 |
+| What have I learned? | callable 是 builtin 函数不是类型; lru_cache 用于 FastAPI 单例 DI; TestClient monkeypatch 需要 cache_clear() 配合; extract_memory_updates 用 tuple 返回值同时清理和提取; Callable 需要从 collections.abc 导入 |
+| What have I done? | Phase 1-7 + 配额处理全部完成，156 backend tests 通过，前端 MVP 就绪，安全审查完成 |

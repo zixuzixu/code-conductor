@@ -74,7 +74,7 @@ Complete (all core phases done)
 - [x] NDJSON 日志解析 & Manager 监控层
 - [x] 崩溃恢复：QueueManager.recover_in_progress() 重启后 IN_PROGRESS 任务重新入队
 - [x] Worker 完成处理：Master 审查 → Accept/Reject/Partial (Phase 3b 已实现)
-- [ ] Quota 耗尽处理 PENDING_QUOTA (移至 Phase 7 Polish)
+- [x] Quota 耗尽处理 PENDING_QUOTA (WorkerMonitor 检测 + SessionDispatcher 重试 + WebSocket 广播 + Resume API + 前端指示器)
 - [x] 测试: 64 tests passed (45 existing + 10 queue + 9 worker), ruff check clean
 - **Status:** complete
 
@@ -122,8 +122,8 @@ Complete (all core phases done)
 - [ ] Voice 按住说话组件 (deferred, nice-to-have)
 - [ ] PWA 支持 (deferred, nice-to-have)
 - [ ] 响应式设计 (deferred, nice-to-have)
-- [ ] Quota 耗尽处理 PENDING_QUOTA (deferred, nice-to-have)
-- **Status:** complete (core items done, deferred items are nice-to-have)
+- [x] Quota 耗尽处理 PENDING_QUOTA (完成: 检测 + 重试 + 广播 + Resume API + 前端)
+- **Status:** complete
 
 ## Key Questions
 1. Gemini 3.1 Pro API 使用什么 SDK？ → google-genai 或直接 HTTP
