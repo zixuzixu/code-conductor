@@ -14,8 +14,10 @@
 - **Language**: Python 3.10+
 - **Master Agent**: API-based LLM (Gemini 3.1 Pro primary, Kimi k2.5 fallback)
 - **Worker Agent**: Claude Code (local CLI invocation, non-interactive mode)
-- **Backend**: FastAPI (or Flask), WebSockets/SSE for real-time streaming, asyncio for concurrency
+- **Backend**: FastAPI, WebSockets/SSE for real-time streaming, asyncio for concurrency
 - **Frontend**: React SPA built to static files, served by FastAPI
+- **Logging**: structlog (structured logging, NDJSON-compatible)
+- **Testing**: pytest + pytest-asyncio
 - **Storage**: JSON for state/data, YAML for configuration
 
 ---
@@ -64,10 +66,16 @@ For sessions created with `repo_url` (no local path), worktrees fall back to `~/
 ### 3.2 Repository Code Structure (Stateless)
 ```text
 code-conductor/
-├── src/                # Python backend (api/, core/, agents/)
+├── src/
+│   └── conductor/      # Python package (src layout, PyPA recommended)
+│       ├── core/       # Models, config, constants
+│       ├── api/        # FastAPI route handlers
+│       ├── agents/     # LLM providers, Master Agent
+│       └── managers/   # Session, Thread, Queue, Git, Memory managers
+├── tests/              # pytest test suite
 ├── web/                # React frontend (src/ for dev, static/ for runtime)
 ├── config/             # Default templates and examples
-├── .yapf               # YAPF code style configuration
+├── pyproject.toml      # Project config (dependencies, ruff, pytest)
 ├── server.py           # Entry point
 └── project.md          # This specification
 ```
@@ -343,15 +351,21 @@ The core principle of Code Conductor is **servant leadership for AI**: provide c
 ## 11. Development Guidelines
 
 ### 11.1 Code Style
-- **Standard**: Google Code Style (2-space indent, 120 column limit)
-- **Python**: Enforced via YAPF (`.yapf`):
-  ```ini
-  [style]
-  based_on_style = google
-  indent_width = 2
-  split_before_first_argument = true
-  column_limit = 120
+- **Standard**: PEP 8 (4-space indent, 120 column limit)
+- **Tooling**: Ruff (linting + formatting), configured in `pyproject.toml`:
+  ```toml
+  [tool.ruff]
+  line-length = 120
+  target-version = "py310"
+
+  [tool.ruff.lint]
+  select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
+
+  [tool.ruff.format]
+  quote-style = "double"
+  indent-style = "space"
   ```
+- **Type hints**: Modern syntax — `str | None` (not `Optional[str]`), `list[str]` (not `List[str]`)
 
 ### 11.2 Worker Instructions (CLAUDE.md)
 Each Thread's `CLAUDE.md` contains:
@@ -363,7 +377,7 @@ Each Thread's `CLAUDE.md` contains:
 
 ## 12. Implementation Status
 
-### 12.1 Completed (MVP)
+### 12.1 MVP Target (To Be Implemented)
 
 **Backend**
 - FastAPI server (`server.py`)
