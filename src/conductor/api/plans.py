@@ -92,7 +92,8 @@ async def execute_plan(plan_id: UUID):
     created_tasks = []
     for step in steps:
         priority_map = {"p0": Priority.P0, "p1": Priority.P1, "p2": Priority.P2}
-        priority = priority_map.get(step.priority.value if hasattr(step.priority, "value") else str(step.priority), Priority.P1)
+        raw = step.priority.value if hasattr(step.priority, "value") else str(step.priority)
+        priority = priority_map.get(raw, Priority.P1)
         task = Task(
             title=step.description[:120],
             description=step.description,

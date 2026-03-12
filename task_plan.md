@@ -116,13 +116,22 @@ Complete (Phase 1-8 all done)
 - [x] 端到端测试 — 10 E2E 集成场景 (session lifecycle, priority scheduling, worker simulation, failover, crash recovery)
 - [x] PROGRESS.md 经验沉淀系统验证
 - [x] 安全审查 — 修复 5 个 Critical/High 问题 (branch name injection, path traversal, input length limits), docs/security-audit.md
-- [ ] REST API: `/api/voice` 语音转录 (deferred, nice-to-have)
-- [ ] Plan Mode API (deferred, nice-to-have)
-- [ ] Plan 审查清单 UI (deferred, nice-to-have)
-- [ ] Voice 按住说话组件 (deferred, nice-to-have)
-- [ ] PWA 支持 (deferred, nice-to-have)
-- [ ] 响应式设计 (deferred, nice-to-have)
+- [x] REST API: `/api/voice` 语音转录 (Gemini 2.0 Flash, 中英混合)
+- [x] Plan Mode API (/api/plans CRUD + execute)
+- [x] Plan 审查清单 UI (PlanChecklist + PlanStep + PlansPanel)
+- [x] Voice 按住说话组件 (VoiceButton + useVoiceRecorder)
+- [x] PWA 支持 (manifest.json + service worker + SVG icons)
+- [x] 响应式设计 (mobile bottom tab navigation, responsive panels)
 - [x] Quota 耗尽处理 PENDING_QUOTA (完成: 检测 + 重试 + 广播 + Resume API + 前端)
+- **Status:** complete (all deferred features implemented)
+
+### Phase 9: Deferred Features
+- [x] 9.1 响应式设计 — mobile bottom tab bar, responsive panel widths, viewport meta
+- [x] 9.2 PWA 支持 — manifest.json, service worker (cache-first assets, network-first HTML), SVG app icons
+- [x] 9.3 Voice API — POST /api/voice (Gemini 2.0 Flash transcription, 中英混合, 25MB limit)
+- [x] 9.4 Voice Push-to-Talk — VoiceButton + useVoiceRecorder (MediaRecorder API), integrated in ChatInput
+- [x] 9.5 Plan Mode API — PlanManager + /api/plans CRUD + execute (steps → tasks in queue)
+- [x] 9.6 Plan Review Checklist UI — PlanChecklist (toggle/priority/approve/execute), PlansPanel in App
 - **Status:** complete
 
 ## Key Questions

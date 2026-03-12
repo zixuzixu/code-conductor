@@ -75,11 +75,11 @@ async def transcribe(audio: UploadFile):
 
     try:
         text = await _transcribe_with_gemini(api_key, content, mime)
-    except ImportError:
-        raise HTTPException(503, "google-genai package not installed")
+    except ImportError as exc:
+        raise HTTPException(503, "google-genai package not installed") from exc
     except Exception as e:
         logger.error("voice.transcription_error", error=str(e))
-        raise HTTPException(500, f"Transcription failed: {e}")
+        raise HTTPException(500, f"Transcription failed: {e}") from e
 
     if not text:
         raise HTTPException(422, "Could not transcribe audio — no speech detected")

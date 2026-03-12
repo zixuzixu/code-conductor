@@ -10,7 +10,15 @@ from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from conductor.api import chat_router, memory_router, plans_router, sessions_router, threads_router, voice_router, ws_router
+from conductor.api import (
+    chat_router,
+    memory_router,
+    plans_router,
+    sessions_router,
+    threads_router,
+    voice_router,
+    ws_router,
+)
 from conductor.core.config import init_conductor_home
 
 # --- Structlog setup ---

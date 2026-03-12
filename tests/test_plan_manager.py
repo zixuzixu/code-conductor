@@ -4,7 +4,6 @@ from uuid import uuid4
 
 import pytest
 
-from conductor.core.models import Plan, PlanStep
 from conductor.managers.plan_manager import PlanManager
 
 

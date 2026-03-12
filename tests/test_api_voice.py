@@ -7,7 +7,6 @@ from fastapi.testclient import TestClient
 
 from conductor.api.deps import get_config
 
-
 FAKE_AUDIO = b"\x00\x01\x02" * 100
 
 

@@ -1,5 +1,34 @@
 # Progress Log
 
+## Session: 2026-03-13 (Deferred Features Implementation)
+
+### Phase 9: Deferred Features
+- **Status:** complete
+- **Started:** 2026-03-13 09:40
+- **Completed:** 2026-03-13 10:15
+- **Commits:** `96b9015`, `273deb9`, `2eb4c21`, `d16fe8a`, `5341ead`
+- Actions taken:
+  - 9.1: Responsive design — mobile bottom tab bar (Sessions/Chat/Tasks), panels full-width on mobile, `lg:` breakpoint
+  - 9.2: PWA — manifest.json (standalone), service worker (cache-first hashed assets, network-first HTML), SVG task-queue icons
+  - 9.3: Voice API — POST /api/voice (Gemini 2.0 Flash audio transcription), multipart upload, 25MB limit, disclaimer
+  - 9.4: Voice Push-to-Talk — VoiceButton (idle/recording/transcribing states), useVoiceRecorder (MediaRecorder), elapsed timer
+  - 9.5: Plan Mode API — PlanManager CRUD, /api/plans (create/get/list/update/delete/execute), PlanStep/Plan models, PLANS_DIR
+  - 9.6: Plan Review Checklist UI — PlanChecklist (step toggle, priority, approve, execute), PlansPanel below ThreadPanel
+  - Added python-multipart dependency for file upload support
+  - 183 backend tests passing, ruff check clean, TypeScript zero errors
+- Files created:
+  - src/conductor/api/{voice.py, plans.py}
+  - src/conductor/managers/plan_manager.py
+  - tests/{test_api_voice.py, test_plan_manager.py, test_api_plans.py}
+  - web/src/hooks/{use-voice-recorder.ts, use-plans.ts}
+  - web/src/components/chat/voice-button.tsx
+  - web/src/components/plans/{plan-step.tsx, plan-checklist.tsx, plans-panel.tsx}
+  - web/public/{manifest.json, sw.js, icon-192.svg, icon-512.svg}
+- Files modified:
+  - server.py, src/conductor/api/{__init__.py, deps.py}, src/conductor/core/{constants.py, models.py}
+  - web/src/{App.tsx, lib/api.ts, components/chat/chat-input.tsx}
+  - web/index.html
+
 ## Session: 2026-03-13 (Frontend UX Polish)
 
 ### Phase 8: Frontend UX Polish
