@@ -51,6 +51,8 @@ class SessionDispatcher:
         self._active_threads: dict[str, Thread] = {}
         self._running = False
         self._task: asyncio.Task | None = None
+        self._paused = False
+        self._quota_backoff_delays = [30, 60, 120]  # seconds
 
     @property
     def active_count(self) -> int:
@@ -59,6 +61,15 @@ class SessionDispatcher:
     @property
     def is_running(self) -> bool:
         return self._running
+
+    @property
+    def is_paused(self) -> bool:
+        return self._paused
+
+    def resume_dispatch(self) -> None:
+        """Resume dispatching after a quota pause."""
+        self._paused = False
+        logger.info("dispatcher.resumed", session_id=str(self.session.id))
 
     def start(self) -> asyncio.Task:
         """Start the dispatch loop as a background asyncio task."""
@@ -88,6 +99,11 @@ class SessionDispatcher:
                 # Check if we have worker slots available
                 if self.active_count >= self.session.max_workers:
                     await asyncio.sleep(1)
+                    continue
+
+                # Check if paused due to quota exhaustion
+                if self._paused:
+                    await asyncio.sleep(5)
                     continue
 
                 # Try to pop a task
@@ -124,11 +140,8 @@ class SessionDispatcher:
             # Step 3: Setup (symlinks + CLAUDE.md)
             thread = await self.thread_mgr.setup_thread(thread, self.session, task)
 
-            # Step 4: Execute Worker
-            result = await self.worker_runner.run(
-                worktree_path=thread.worktree_path,
-                thread_id=str(thread.id),
-            )
+            # Step 4: Execute Worker (with quota retry)
+            result = await self._run_with_quota_retry(thread, task)
 
             # Steps 5-8: Post-execution (commit, merge, push)
             await self._post_execution(task, thread, result)
@@ -153,6 +166,42 @@ class SessionDispatcher:
                 self._active_threads.pop(str(thread.id), None)
                 success = thread.status == ThreadStatus.COMPLETED
                 await self.thread_mgr.cleanup_thread(thread, success=success)
+
+    async def _run_with_quota_retry(self, thread: Thread, task: Task) -> WorkerResult:
+        """Run Worker with exponential backoff on quota errors."""
+        for attempt, delay in enumerate(self._quota_backoff_delays):
+            result = await self.worker_runner.run(
+                worktree_path=thread.worktree_path,
+                thread_id=str(thread.id),
+            )
+
+            if not result.quota_exhausted:
+                return result
+
+            logger.warning(
+                "worker.quota_retry",
+                task_id=str(task.id),
+                attempt=attempt + 1,
+                delay=delay,
+            )
+            task.status = TaskStatus.PENDING_QUOTA
+            self.queue.update_task(self.session.id, task)
+            await asyncio.sleep(delay)
+
+        # Final attempt after all backoff delays
+        result = await self.worker_runner.run(
+            worktree_path=thread.worktree_path,
+            thread_id=str(thread.id),
+        )
+
+        if result.quota_exhausted:
+            self._paused = True
+            task.status = TaskStatus.FAILED
+            task.error_context = "Quota exhausted after retries"
+            self.queue.update_task(self.session.id, task)
+            logger.error("dispatcher.quota_paused", session_id=str(self.session.id))
+
+        return result
 
     async def _post_execution(self, task: Task, thread: Thread, result: WorkerResult) -> None:
         """Steps 5-8: commit, merge, push after Worker execution."""
