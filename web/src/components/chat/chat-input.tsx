@@ -1,7 +1,8 @@
 import { Send } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { VoiceButton } from "./voice-button";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -27,6 +28,13 @@ export function ChatInput({ onSend, disabled, sessionId }: ChatInputProps) {
     if (storageKey) localStorage.removeItem(storageKey);
   };
 
+  const handleVoiceTranscript = useCallback(
+    (text: string) => {
+      handleChange(draft ? `${draft}\n${text}` : text);
+    },
+    [draft],
+  );
+
   // Restore draft when session changes
   useState(() => {
     if (storageKey) {
@@ -51,6 +59,7 @@ export function ChatInput({ onSend, disabled, sessionId }: ChatInputProps) {
         className="min-h-[60px] max-h-[200px] resize-none text-sm"
         rows={2}
       />
+      <VoiceButton onTranscript={handleVoiceTranscript} disabled={!sessionId || disabled} />
       <Button
         size="icon"
         onClick={handleSend}

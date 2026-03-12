@@ -108,6 +108,20 @@ export async function deleteTask(sessionId: string, taskId: string): Promise<voi
   if (!res.ok) throw new Error(`DELETE /tasks: ${res.status}`);
 }
 
+// --- Voice ---
+export interface TranscriptionResult {
+  text: string;
+  disclaimer: string;
+}
+
+export async function transcribeAudio(audioBlob: Blob): Promise<TranscriptionResult> {
+  const form = new FormData();
+  form.append("audio", audioBlob, "recording.webm");
+  const res = await fetch(`${BASE}/api/voice`, { method: "POST", body: form });
+  if (!res.ok) throw new Error(`POST /voice: ${res.status}`);
+  return res.json();
+}
+
 // --- Dispatch control ---
 export async function resumeDispatch(sessionId: string): Promise<{ was_paused: boolean; is_paused: boolean }> {
   const res = await fetch(`${BASE}/api/threads/dispatch/${sessionId}/resume`, {
