@@ -108,6 +108,68 @@ export async function deleteTask(sessionId: string, taskId: string): Promise<voi
   if (!res.ok) throw new Error(`DELETE /tasks: ${res.status}`);
 }
 
+// --- Plans ---
+export interface PlanStep {
+  id: string;
+  description: string;
+  priority: string;
+  enabled: boolean;
+}
+
+export interface Plan {
+  id: string;
+  session_id: string;
+  title: string;
+  steps: PlanStep[];
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function fetchPlans(sessionId: string): Promise<Plan[]> {
+  const res = await fetch(`${BASE}/api/plans/session/${sessionId}`);
+  if (!res.ok) throw new Error(`GET /plans: ${res.status}`);
+  return res.json();
+}
+
+export async function createPlan(data: {
+  session_id: string;
+  title: string;
+  steps: Array<{ description: string; priority?: string; enabled?: boolean }>;
+}): Promise<Plan> {
+  const res = await fetch(`${BASE}/api/plans`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`POST /plans: ${res.status}`);
+  return res.json();
+}
+
+export async function updatePlan(
+  planId: string,
+  data: { title?: string; status?: string; steps?: PlanStep[] },
+): Promise<Plan> {
+  const res = await fetch(`${BASE}/api/plans/${planId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`PATCH /plans: ${res.status}`);
+  return res.json();
+}
+
+export async function executePlan(planId: string): Promise<{ tasks_created: number }> {
+  const res = await fetch(`${BASE}/api/plans/${planId}/execute`, { method: "POST" });
+  if (!res.ok) throw new Error(`POST /plans/execute: ${res.status}`);
+  return res.json();
+}
+
+export async function deletePlan(planId: string): Promise<void> {
+  const res = await fetch(`${BASE}/api/plans/${planId}`, { method: "DELETE" });
+  if (!res.ok) throw new Error(`DELETE /plans: ${res.status}`);
+}
+
 // --- Voice ---
 export interface TranscriptionResult {
   text: string;

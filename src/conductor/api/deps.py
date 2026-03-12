@@ -5,6 +5,7 @@ from functools import lru_cache
 from conductor.core.config import load_config
 from conductor.core.models import ConductorConfig
 from conductor.managers.memory_manager import MemoryManager
+from conductor.managers.plan_manager import PlanManager
 from conductor.managers.queue_manager import QueueManager
 from conductor.managers.session_manager import SessionManager
 
@@ -27,6 +28,11 @@ def get_queue_manager() -> QueueManager:
 @lru_cache
 def get_memory_manager() -> MemoryManager:
     return MemoryManager()
+
+
+@lru_cache
+def get_plan_manager() -> PlanManager:
+    return PlanManager()
 
 
 # Registry of active dispatchers — keyed by str(session_id)

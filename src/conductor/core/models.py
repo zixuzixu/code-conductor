@@ -24,6 +24,26 @@ class Task(BaseModel):
     parent_task_id: UUID | None = None  # for follow-up fix tasks
 
 
+# --- Plan ---
+
+
+class PlanStep(BaseModel):
+    id: UUID = Field(default_factory=uuid4)
+    description: str
+    priority: Priority = Priority.P1
+    enabled: bool = True  # user can toggle steps on/off
+
+
+class Plan(BaseModel):
+    id: UUID = Field(default_factory=uuid4)
+    session_id: UUID
+    title: str = ""
+    steps: list[PlanStep] = Field(default_factory=list)
+    status: str = "draft"  # draft | approved | executing | completed
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+
+
 # --- Thread ---
 
 

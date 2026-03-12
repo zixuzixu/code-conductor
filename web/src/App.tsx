@@ -3,11 +3,13 @@ import { MessageSquare, ListTodo, Menu } from "lucide-react";
 import { SessionList } from "@/components/sidebar/session-list";
 import { ChatPanel } from "@/components/chat/chat-panel";
 import { ThreadPanel } from "@/components/threads/thread-panel";
+import { PlansPanel } from "@/components/plans/plans-panel";
 import { QuotaBanner } from "@/components/threads/quota-banner";
 import { Button } from "@/components/ui/button";
 import { useSessions } from "@/hooks/use-sessions";
 import { useChat } from "@/hooks/use-chat";
 import { useTasks } from "@/hooks/use-tasks";
+import { usePlans } from "@/hooks/use-plans";
 import { useWebSocket } from "@/hooks/use-websocket";
 
 type MobilePanel = "sessions" | "chat" | "tasks";
@@ -19,6 +21,7 @@ function App() {
   const { sessions, create, remove } = useSessions();
   const { messages, streaming, send, clear } = useChat(activeSessionId);
   const { tasks, add: addTask, remove: removeTask } = useTasks(activeSessionId);
+  const { plans, update: updatePlan, execute: executePlan, remove: removePlan } = usePlans(activeSessionId);
 
   const handleSelectSession = useCallback(
     (id: string) => {
@@ -110,6 +113,12 @@ function App() {
           sessionId={activeSessionId}
           onAdd={addTask}
           onDelete={removeTask}
+        />
+        <PlansPanel
+          plans={plans}
+          onUpdate={updatePlan}
+          onExecute={executePlan}
+          onDelete={removePlan}
         />
       </div>
 
