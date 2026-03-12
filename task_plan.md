@@ -4,7 +4,7 @@
 根据 project.md 规格说明，从零实现 Code Conductor：一个基于 Python 的多 Claude Code Worker 编排系统，包含 FastAPI 后端、React 前端、实时 WebSocket 通信和完整的任务生命周期管理。
 
 ## Current Phase
-Phase 5
+Phase 6
 
 ## Phases
 
@@ -79,16 +79,18 @@ Phase 5
 - **Status:** complete
 
 ### Phase 5: API Routes & WebSockets
-- [ ] REST API: `/api/sessions` CRUD
-- [ ] REST API: `/api/chat` (SSE 流式)
-- [ ] REST API: `/api/threads` 管理
-- [ ] REST API: `/api/voice` 语音转录
-- [ ] REST API: `/api/memory` 记忆管理
-- [ ] REST API: `/api/sessions/projects` 项目扫描
-- [ ] WebSocket: `/ws/sessions/{session_id}` — Session 级事件
-- [ ] WebSocket: `/ws/threads/{thread_id}` — Worker NDJSON 实时流
-- [ ] Plan Mode API (Phase 1 计划 → Phase 2 执行)
-- **Status:** pending
+- [x] REST API: `/api/sessions` CRUD (GET/POST/PATCH/DELETE)
+- [x] REST API: `/api/chat` (SSE 流式, conversation persistence)
+- [x] REST API: `/api/threads/tasks` 任务队列管理 (POST/GET/DELETE)
+- [ ] REST API: `/api/voice` 语音转录 (移至 Phase 7)
+- [x] REST API: `/api/memory` 记忆管理 (GET/PUT/PATCH)
+- [x] REST API: `/api/sessions/projects` 项目扫描
+- [x] WebSocket: `/ws/sessions/{session_id}` — Session 级事件 + broadcast helper
+- [x] WebSocket: `/ws/threads/{thread_id}` — Worker NDJSON 实时流 + broadcast helper
+- [ ] Plan Mode API (移至 Phase 7)
+- [x] 依赖注入: `api/deps.py` 单例 Manager 工厂
+- [x] 测试: 83 tests passed (64 existing + 19 new), ruff check clean
+- **Status:** complete
 
 ### Phase 6: React Frontend
 - [ ] Vite + TypeScript + React 项目初始化

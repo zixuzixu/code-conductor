@@ -98,11 +98,32 @@
 - Files modified:
   - src/conductor/managers/__init__.py (新增 exports)
 
+### Phase 5: API Routes & WebSockets
+- **Status:** complete
+- **Started:** 2026-03-13 00:20
+- **Completed:** 2026-03-13 00:35
+- Actions taken:
+  - deps.py: lru_cache 单例依赖注入 (SessionManager, QueueManager, MemoryManager, Config)
+  - sessions.py: 完整 CRUD (GET list, POST create, GET by id, PATCH update, DELETE) + /projects 扫描
+  - chat.py: SSE 流式 (text/event-stream), MasterAgent failover, conversation history 持久化到 session
+  - threads.py: 任务队列管理 (POST create task, GET list tasks, DELETE task)
+  - memory.py: MEMORY.md 管理 (GET read, PUT overwrite, PATCH key-value update)
+  - websockets.py: /ws/sessions/{id} + /ws/threads/{id} + broadcast_session_event/broadcast_thread_event helpers
+  - server.py: 挂载 5 个 APIRouter
+  - Voice 和 Plan Mode API 推迟至 Phase 7
+  - 19 个新测试全通过, ruff check clean
+- Files created:
+  - src/conductor/api/{deps.py, sessions.py, chat.py, threads.py, memory.py, websockets.py}
+  - tests/{test_api_sessions.py, test_api_threads.py, test_api_memory.py, test_api_websockets.py}
+- Files modified:
+  - server.py (include_router x5)
+  - src/conductor/api/__init__.py (rewritten with exports)
+
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 4 complete, Phase 5 (API Routes) pending |
-| Where am I going? | Phase 5 (API) → Phase 6 (Frontend) → Phase 7 (Integration) |
+| Where am I? | Phase 5 complete, Phase 6 (React Frontend) pending |
+| Where am I going? | Phase 6 (Frontend) → Phase 7 (Integration & Polish) |
 | What's the goal? | 从零实现 Code Conductor 多 Agent 编排系统 |
-| What have I learned? | callable 是 builtin 函数不是类型, 不能用 `\|` 语法; asyncio.create_task 返回值必须存储 (RUF006); `not in` 优于 `not x in y` |
-| What have I done? | Phase 1-4 完成，64 tests 全通过，后端核心逻辑就绪 |
+| What have I learned? | callable 是 builtin 函数不是类型; lru_cache 用于 FastAPI 单例 DI; TestClient monkeypatch 需要 cache_clear() 配合 |
+| What have I done? | Phase 1-5 完成，83 tests 全通过，后端 API 层就绪 |
