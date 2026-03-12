@@ -3,7 +3,7 @@ import { type Task, fetchTasks, createTask, deleteTask } from "@/lib/api";
 
 export function useTasks(sessionId: string | null) {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const intervalRef = useRef<ReturnType<typeof setInterval>>();
+  const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
   const refresh = useCallback(async () => {
     if (!sessionId) return;
