@@ -24,6 +24,18 @@ from conductor.core.constants import (
 
 logger = structlog.get_logger()
 
+QUOTA_PATTERNS = [
+    "rate limit",
+    "quota exceeded",
+    "too many requests",
+    "429",
+    "resource_exhausted",
+]
+
+
+class QuotaExhaustedError(Exception):
+    """Raised when a Worker encounters API quota/rate-limit errors."""
+
 
 @dataclass
 class WorkerEvent:
@@ -45,6 +57,7 @@ class WorkerResult:
     success: bool = False
     killed: bool = False
     kill_reason: str | None = None
+    quota_exhausted: bool = False
 
 
 class WorkerMonitor:
@@ -70,6 +83,7 @@ class WorkerMonitor:
         self.files_modified: list[str] = []
         self._should_kill = False
         self._kill_reason: str | None = None
+        self._quota_exhausted = False
 
     def process_event(self, event: WorkerEvent) -> None:
         """Process a single NDJSON event and check for anomalies."""
@@ -93,6 +107,10 @@ class WorkerMonitor:
 
         if event.type == "error":
             error_msg = event.data.get("message", "unknown error")
+            error_lower = error_msg.lower()
+            if any(p in error_lower for p in QUOTA_PATTERNS):
+                self._quota_exhausted = True
+                logger.warning("worker.quota_exhausted", thread_id=self.thread_id, error=error_msg)
             self.errors.append(error_msg)
             self.error_counts[error_msg] = self.error_counts.get(error_msg, 0) + 1
             if self.error_counts[error_msg] >= MAX_WORKER_RETRIES:
@@ -113,6 +131,10 @@ class WorkerMonitor:
         # Long thinking without tool use
         if now - self.last_tool_use_time > WORKER_THINKING_TIMEOUT_S:
             logger.warning("worker.thinking_timeout", thread_id=self.thread_id)
+
+    @property
+    def quota_exhausted(self) -> bool:
+        return self._quota_exhausted
 
     @property
     def should_kill(self) -> bool:
@@ -212,6 +234,7 @@ class WorkerRunner:
             success=success,
             killed=monitor.should_kill,
             kill_reason=monitor.kill_reason,
+            quota_exhausted=monitor.quota_exhausted,
         )
 
         logger.info(

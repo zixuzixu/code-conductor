@@ -4,7 +4,12 @@ import time
 
 import pytest
 
-from conductor.managers.worker_runner import WorkerEvent, WorkerMonitor, WorkerRunner
+from conductor.managers.worker_runner import (
+    QuotaExhaustedError,
+    WorkerEvent,
+    WorkerMonitor,
+    WorkerRunner,
+)
 
 # --- WorkerMonitor ---
 
@@ -96,3 +101,42 @@ def test_parse_ndjson_complete():
     event = WorkerRunner._parse_ndjson_line(line)
     assert event.type == "complete"
     assert event.data["status"] == "success"
+
+
+# --- Quota Detection ---
+
+
+def test_monitor_detects_quota_error_rate_limit(monitor):
+    """Quota error with 'rate limit' message sets quota flag."""
+    event = WorkerEvent(type="error", data={"message": "rate limit exceeded for model"})
+    monitor.process_event(event)
+    assert monitor.quota_exhausted
+    assert not monitor.should_kill
+
+
+def test_monitor_detects_quota_error_429(monitor):
+    """Quota error with '429' in message sets quota flag."""
+    event = WorkerEvent(type="error", data={"message": "HTTP 429 Too Many Requests"})
+    monitor.process_event(event)
+    assert monitor.quota_exhausted
+
+
+def test_monitor_detects_quota_error_resource_exhausted(monitor):
+    """Quota error with 'resource_exhausted' sets quota flag."""
+    event = WorkerEvent(type="error", data={"message": "resource_exhausted: quota limit"})
+    monitor.process_event(event)
+    assert monitor.quota_exhausted
+
+
+def test_monitor_normal_error_no_quota_flag(monitor):
+    """Normal errors don't set quota flag."""
+    event = WorkerEvent(type="error", data={"message": "ImportError: no module named foo"})
+    monitor.process_event(event)
+    assert not monitor.quota_exhausted
+
+
+def test_quota_exhausted_error_is_exception():
+    """QuotaExhaustedError is a proper exception."""
+    err = QuotaExhaustedError("rate limit hit")
+    assert isinstance(err, Exception)
+    assert str(err) == "rate limit hit"
