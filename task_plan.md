@@ -4,20 +4,20 @@
 根据 project.md 规格说明，从零实现 Code Conductor：一个基于 Python 的多 Claude Code Worker 编排系统，包含 FastAPI 后端、React 前端、实时 WebSocket 通信和完整的任务生命周期管理。
 
 ## Current Phase
-Phase 1
+Phase 2
 
 ## Phases
 
 ### Phase 1: Project Scaffolding & Core Models
-- [ ] 1.1 `uv init` + pyproject.toml (依赖: fastapi, uvicorn[standard], pyyaml, httpx, filelock, structlog; dev: pytest, pytest-asyncio, ruff)
-- [ ] 1.2 创建 src/conductor/ 包结构 (core/, api/, agents/, managers/) + tests/
-- [ ] 1.3 src/conductor/core/constants.py — 路径常量、状态枚举 (SessionStatus, ThreadStatus, TaskStatus, Priority)
-- [ ] 1.4 src/conductor/core/models.py — Pydantic v2 数据模型 (Session, Thread, Task, ConductorConfig)，类型标注用 `X | None` 现代语法
-- [ ] 1.5 src/conductor/core/config.py — init_conductor_home(), load_config(), save_config(), 默认 config.yaml 模板
-- [ ] 1.6 pyproject.toml 内配置 Ruff (PEP 8, 4-space, 120 col) + pytest
-- [ ] 1.7 server.py — FastAPI 入口 (/api/health, CORS, no-cache 中间件, 静态文件挂载, structlog 初始化)
-- [ ] 1.8 验证: `uv run server.py` 能启动，`/api/health` 返回 200, `uv run ruff check .` 通过
-- **Status:** pending
+- [x] 1.1 `uv init` + pyproject.toml (依赖: fastapi, uvicorn[standard], pyyaml, httpx, filelock, structlog; dev: pytest, pytest-asyncio, ruff)
+- [x] 1.2 创建 src/conductor/ 包结构 (core/, api/, agents/, managers/) + tests/
+- [x] 1.3 src/conductor/core/constants.py — 路径常量、状态枚举 (SessionStatus, ThreadStatus, TaskStatus, Priority)
+- [x] 1.4 src/conductor/core/models.py — Pydantic v2 数据模型 (Session, Thread, Task, ConductorConfig)，类型标注用 `X | None` 现代语法
+- [x] 1.5 src/conductor/core/config.py — init_conductor_home(), load_config(), save_config(), 默认 config.yaml 模板
+- [x] 1.6 pyproject.toml 内配置 Ruff (PEP 8, 4-space, 120 col) + pytest + hatchling build-system
+- [x] 1.7 server.py — FastAPI 入口 (/api/health, CORS, no-cache 中间件, 静态文件挂载, structlog + lifespan)
+- [x] 1.8 验证: pytest 通过，`/api/health` 返回 200, `ruff check .` 零错误
+- **Status:** complete
 
 ### Phase 2: Git & Session/Thread Management
 - [ ] `GitManager` — worktree 创建/删除、分支管理、合并操作
@@ -109,7 +109,9 @@ Phase 1
 ## Errors Encountered
 | Error | Attempt | Resolution |
 |-------|---------|------------|
-| 暂无 | - | - |
+| `on_event("startup")` DeprecationWarning | 1 | 改用 lifespan context manager |
+| `ModuleNotFoundError: conductor` | 1 | 添加 hatchling build-system + `[tool.hatch.build.targets.wheel]` |
+| RUF001 全角分号误报 | 1 | `# noqa: RUF001`，中文 prompt 有意为之 |
 
 ## Notes
 - project.md §12.1 描述的 "Completed (MVP)" 是目标功能列表，不是已实现的代码
