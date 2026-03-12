@@ -13,7 +13,7 @@ interface ThreadPanelProps {
 
 export function ThreadPanel({ tasks, sessionId, onAdd, onDelete }: ThreadPanelProps) {
   return (
-    <div className="flex h-full w-80 flex-col border-l border-border">
+    <div className="flex h-full w-full flex-col border-l border-border lg:w-80">
       <div className="px-4 py-3">
         <h2 className="text-sm font-semibold">Threads</h2>
         <p className="text-xs text-muted-foreground">

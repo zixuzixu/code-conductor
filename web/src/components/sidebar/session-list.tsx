@@ -25,7 +25,7 @@ export function SessionList({ sessions, activeId, onSelect, onCreate, onDelete }
   };
 
   return (
-    <div className="flex h-full w-60 flex-col border-r border-border bg-sidebar-background">
+    <div className="flex h-full w-full flex-col border-r border-border bg-sidebar-background lg:w-60">
       <div className="flex items-center justify-between px-4 py-3">
         <h2 className="text-sm font-semibold text-sidebar-foreground">Sessions</h2>
         <Button
