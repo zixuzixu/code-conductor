@@ -78,3 +78,4 @@ class ConductorConfig(BaseModel):
     project_dirs: list[str] = Field(default_factory=list)
     max_workers_per_session: int = 3
     backup_retention_hours: int = 168  # 7 days
+    server_port: int = 9130

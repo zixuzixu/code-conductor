@@ -115,4 +115,7 @@ async def health():
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=True)
+    from conductor.core.config import load_config
+
+    cfg = load_config()
+    uvicorn.run("server:app", host="0.0.0.0", port=cfg.server_port, reload=True)

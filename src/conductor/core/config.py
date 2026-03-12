@@ -1,5 +1,6 @@
 """Configuration management for Code Conductor."""
 
+import os
 from pathlib import Path
 
 import yaml
@@ -30,6 +31,7 @@ fallback_llm:
 project_dirs: []
 max_workers_per_session: 3
 backup_retention_hours: 168
+server_port: 9130  # or set CONDUCTOR_PORT env var (takes precedence)
 """
 
 DEFAULT_MEMORY_MD = """\
@@ -60,14 +62,24 @@ def init_conductor_home() -> Path:
 
 
 def load_config() -> ConductorConfig:
-    """Load configuration from config.yaml. Returns defaults if file doesn't exist."""
+    """Load configuration from config.yaml.
+
+    Environment variable overrides:
+      CONDUCTOR_PORT — overrides server_port from config file.
+    """
     if not CONFIG_FILE.exists():
-        return ConductorConfig()
+        config = ConductorConfig()
+    else:
+        with open(CONFIG_FILE) as f:
+            data = yaml.safe_load(f) or {}
+        config = ConductorConfig(**data)
 
-    with open(CONFIG_FILE) as f:
-        data = yaml.safe_load(f) or {}
+    # Env var takes precedence over config file
+    env_port = os.environ.get("CONDUCTOR_PORT")
+    if env_port is not None:
+        config.server_port = int(env_port)
 
-    return ConductorConfig(**data)
+    return config
 
 
 def save_config(config: ConductorConfig) -> None:
