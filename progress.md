@@ -44,11 +44,27 @@
 |-----------|-------|---------|------------|
 | 暂无 | - | - | - |
 
+### Phase 2: Git & Session/Thread Management
+- **Status:** complete
+- **Started:** 2026-03-12 23:35
+- **Completed:** 2026-03-12 23:45
+- Actions taken:
+  - GitManager: 异步 git 操作 (worktree CRUD, branch 管理, merge, commit)
+  - SessionManager: Session CRUD + JSON 持久化 (原子写入 via tmp+replace) + 项目扫描
+  - ThreadManager: Thread 完整生命周期 (create → setup → cleanup), CLAUDE.md 模板生成
+  - MemoryManager: MEMORY.md 读写 (filelock) + PROGRESS.md 追加 (直接写入 main repo)
+  - SymlinkStrategy: §4.4 规则实现 (task_queue.json, dev-task.lock, node_modules, .env symlink; data/ isolated)
+  - 26 tests all passed, ruff check clean
+- Files created:
+  - src/conductor/managers/{git_manager.py, session_manager.py, thread_manager.py, memory_manager.py, symlink_strategy.py}
+  - tests/{test_git_manager.py, test_session_manager.py, test_memory_manager.py, test_thread_manager.py}
+  - src/conductor/managers/__init__.py (updated with exports)
+
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 1 complete, Phase 2 pending |
+| Where am I? | Phase 2 complete, Phase 3 pending |
 | Where am I going? | 7 个阶段：Scaffolding → Git/Session → LLM → Queue/Worker → API → Frontend → Integration |
 | What's the goal? | 从零实现 Code Conductor 多 Agent 编排系统 |
-| What have I learned? | 项目零代码，§12.1 是目标功能列表；需要 FastAPI + React + WebSocket + Claude Code CLI |
-| What have I done? | 完成规划，创建 3 个规划文件 |
+| What have I learned? | contextlib.suppress 替代 try/except/pass; git worktree 需要至少一个 commit; symlink 需在 worktree 删除前清理 |
+| What have I done? | Phase 1 (scaffolding) + Phase 2 (managers) 完成，26 tests 全通过 |

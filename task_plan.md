@@ -4,7 +4,7 @@
 根据 project.md 规格说明，从零实现 Code Conductor：一个基于 Python 的多 Claude Code Worker 编排系统，包含 FastAPI 后端、React 前端、实时 WebSocket 通信和完整的任务生命周期管理。
 
 ## Current Phase
-Phase 2
+Phase 3
 
 ## Phases
 
@@ -20,12 +20,32 @@ Phase 2
 - **Status:** complete
 
 ### Phase 2: Git & Session/Thread Management
-- [ ] `GitManager` — worktree 创建/删除、分支管理、合并操作
-- [ ] `SessionManager` — Session CRUD、元数据持久化
-- [ ] `ThreadManager` — Thread 生命周期、worktree 关联
-- [ ] `MemoryManager` — MEMORY.md 和 PROGRESS.md 读写（带文件锁）
-- [ ] Symlink 策略实现（共享文件 vs 隔离文件）
-- **Status:** pending
+- [x] 2.1 `GitManager` (src/conductor/managers/git_manager.py)
+  - [x] 2.1a `create_worktree(branch_name)` — `git worktree add -b`
+  - [x] 2.1b `remove_worktree(worktree_path)` — `git worktree remove` + 删除分支
+  - [x] 2.1c `merge_branch(source_branch, target_branch)` — checkout + merge + restore
+  - [x] 2.1d `get_current_branch()` / `branch_exists()` / `list_worktrees()` / `has_changes()`
+  - [x] 2.1e 异步封装 (`asyncio.create_subprocess_exec` via `_run_git()`)
+  - [x] 2.1f `commit_in_worktree()` / `fetch_origin()` / `push()`
+- [x] 2.2 `SessionManager` (src/conductor/managers/session_manager.py)
+  - [x] 2.2a `create_session()` → 创建 session 目录 + metadata.json (原子写入)
+  - [x] 2.2b `get_session(id)` / `list_sessions()` / `delete_session(id)`
+  - [x] 2.2c `update_session()` — 更新会话元数据
+  - [x] 2.2d `scan_projects(dirs)` — 扫描项目目录，返回 git repo 列表
+- [x] 2.3 `ThreadManager` (src/conductor/managers/thread_manager.py)
+  - [x] 2.3a `create_thread(session, task)` → GitManager 创建 worktree + 分支
+  - [x] 2.3b `setup_thread(thread)` → symlink 共享文件 + 写 CLAUDE.md
+  - [x] 2.3c `cleanup_thread(thread)` → 更新状态 → 清理 symlink → 删除 worktree
+  - [x] 2.3d 状态流转 (PENDING → SETTING_UP → RUNNING → COMPLETED/FAILED)
+- [x] 2.4 `MemoryManager` (src/conductor/managers/memory_manager.py)
+  - [x] 2.4a `read_memory()` / `update_memory(key, value)` — MEMORY.md 读写 + filelock
+  - [x] 2.4b `append_progress(entry)` — PROGRESS.md 追加（直接写入 main repo）
+  - [x] 2.4c `read_progress()` — 读取 PROGRESS.md
+- [x] 2.5 Symlink 策略 (src/conductor/managers/symlink_strategy.py)
+  - [x] 2.5a `setup_worktree_links(worktree_path, repo_path)` — §4.4 规则
+  - [x] 2.5b `cleanup_worktree_links(worktree_path)` — 删除 symlink 防止误删共享文件
+- [x] 2.6 测试: 26 tests passed (6 git + 6 session + 9 memory + 5 thread)
+- **Status:** complete
 
 ### Phase 3: LLM Providers & Master Agent
 - [ ] `LLMProvider` 抽象基类
