@@ -4,7 +4,7 @@
 根据 project.md 规格说明，从零实现 Code Conductor：一个基于 Python 的多 Claude Code Worker 编排系统，包含 FastAPI 后端、React 前端、实时 WebSocket 通信和完整的任务生命周期管理。
 
 ## Current Phase
-Phase 7
+Complete (all core phases done)
 
 ## Phases
 
@@ -57,12 +57,12 @@ Phase 7
 - [x] 测试: 45 tests passed (26 existing + 19 new), ruff check clean
 - **Status:** complete
 
-### Phase 3b: Master Agent 完整版 (TODO)
-- [ ] 任务分类 (P0/P1/P2) — Master 从用户消息中提取任务并分类优先级
-- [ ] 对话摘要 — 压缩历史消息，保留最近 ~10 轮
-- [ ] Memory update 机制 — Master 回复中附带 memory_update 字段，自动更新 MEMORY.md
-- [ ] Worker 结果审查 — Accept/Reject/Partial 循环
-- **Status:** pending
+### Phase 3b: Master Agent 完整版
+- [x] 任务分类 (P0/P1/P2) — classify_task() LLM-based 任务提取和优先级分类
+- [x] 对话摘要 — summarize_conversation() 压缩历史消息 >10 条，保留最近 6 轮
+- [x] Memory update 机制 — extract_memory_updates() 从 LLM 回复提取 [MEMORY_UPDATE] 标签
+- [x] Worker 结果审查 — review_worker_result() LLM-based accept/reject/partial 判定
+- **Status:** complete
 
 ### Phase 4: Queue Manager & Worker Lifecycle
 - [x] `QueueManager` — 优先级队列 (P0>P1>P2)、原子 JSON 持久化 (`os.replace`)、文件锁
@@ -73,7 +73,7 @@ Phase 7
 - [x] CLAUDE.md 模板系统 (Phase 2 ThreadManager 已实现)
 - [x] NDJSON 日志解析 & Manager 监控层
 - [x] 崩溃恢复：QueueManager.recover_in_progress() 重启后 IN_PROGRESS 任务重新入队
-- [ ] Worker 完成处理：Master 审查 → Accept/Reject/Partial (移至 Phase 3b)
+- [x] Worker 完成处理：Master 审查 → Accept/Reject/Partial (Phase 3b 已实现)
 - [ ] Quota 耗尽处理 PENDING_QUOTA (移至 Phase 7 Polish)
 - [x] 测试: 64 tests passed (45 existing + 10 queue + 9 worker), ruff check clean
 - **Status:** complete
@@ -110,13 +110,20 @@ Phase 7
 - **Status:** complete
 
 ### Phase 7: Integration, Error Handling & Polish
-- [ ] 合并冲突解决 Worker (§9.3)
-- [ ] 自动备份策略 (§9.4)
-- [ ] No-cache 中间件防止旧 JS bundle
-- [ ] 端到端测试：用户发消息 → Master 分类 → Worker 执行 → 结果返回
-- [ ] PROGRESS.md 经验沉淀系统验证
-- [ ] 性能调优 & 安全审查
-- **Status:** pending
+- [x] 合并冲突解决 Worker (§9.3) — ConflictResolver: dry-run merge 检测, ours/theirs/smart 自动解决
+- [x] 自动备份策略 (§9.4) — BackupManager: git tag-based backup/restore/cleanup, 微秒精度
+- [x] No-cache 中间件防止旧 JS bundle — 3-tier Cache-Control (HTML no-cache, hashed assets immutable, API no-cache)
+- [x] 端到端测试 — 10 E2E 集成场景 (session lifecycle, priority scheduling, worker simulation, failover, crash recovery)
+- [x] PROGRESS.md 经验沉淀系统验证
+- [x] 安全审查 — 修复 5 个 Critical/High 问题 (branch name injection, path traversal, input length limits), docs/security-audit.md
+- [ ] REST API: `/api/voice` 语音转录 (deferred, nice-to-have)
+- [ ] Plan Mode API (deferred, nice-to-have)
+- [ ] Plan 审查清单 UI (deferred, nice-to-have)
+- [ ] Voice 按住说话组件 (deferred, nice-to-have)
+- [ ] PWA 支持 (deferred, nice-to-have)
+- [ ] 响应式设计 (deferred, nice-to-have)
+- [ ] Quota 耗尽处理 PENDING_QUOTA (deferred, nice-to-have)
+- **Status:** complete (core items done, deferred items are nice-to-have)
 
 ## Key Questions
 1. Gemini 3.1 Pro API 使用什么 SDK？ → google-genai 或直接 HTTP
