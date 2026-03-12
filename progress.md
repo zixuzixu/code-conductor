@@ -119,11 +119,39 @@
   - server.py (include_router x5)
   - src/conductor/api/__init__.py (rewritten with exports)
 
+### Phase 6: React Frontend (MVP)
+- **Status:** complete
+- **Started:** 2026-03-13 00:40
+- **Completed:** 2026-03-13 01:10
+- Actions taken:
+  - Vite + React + TypeScript scaffold (pnpm, React 19, Vite 7)
+  - Tailwind CSS v4 + shadcn/ui with dark theme (zinc preset, oklch colors)
+  - API client library (sessions CRUD, chat SSE streaming, tasks CRUD)
+  - 4 custom hooks (useSessions, useChat with SSE, useTasks with 3s polling, useWebSocket)
+  - 8 UI components across 3 panels (sidebar, chat, threads)
+  - Three-panel Linear-style layout in App.tsx
+  - localStorage draft persistence per session
+  - Production build to web/static/, FastAPI serves it
+  - TypeScript: zero errors; Backend: 83 tests still passing
+- Commits:
+  - `7d53b72` feat(web): scaffold Vite + React + TypeScript project
+  - `d1b11a1` feat(web): setup Tailwind CSS v4 + shadcn/ui with dark theme
+  - `7a41759` feat(web): add API client library
+  - `29f8ab9` feat(web): add React hooks
+  - `d52a250` feat(web): add Sessions sidebar components
+  - `3a57de8` feat(web): add Chat panel with SSE streaming
+  - `af9234d` feat(web): add Threads panel with task queue management
+  - `2abe1e9` feat(web): integrate three-panel layout with full data flow
+- Files created:
+  - web/ (entire frontend project, ~30 files)
+  - docs/plans/2026-03-13-frontend-mvp-design.md
+  - docs/plans/2026-03-13-frontend-mvp.md
+
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 5 complete, Phase 6 (React Frontend) pending |
-| Where am I going? | Phase 6 (Frontend) → Phase 7 (Integration & Polish) |
+| Where am I? | Phase 6 complete, Phase 7 (Integration & Polish) pending |
+| Where am I going? | Phase 7 (Integration, Error Handling & Polish) |
 | What's the goal? | 从零实现 Code Conductor 多 Agent 编排系统 |
 | What have I learned? | callable 是 builtin 函数不是类型; lru_cache 用于 FastAPI 单例 DI; TestClient monkeypatch 需要 cache_clear() 配合 |
-| What have I done? | Phase 1-5 完成，83 tests 全通过，后端 API 层就绪 |
+| What have I done? | Phase 1-6 完成，83 backend tests 通过，前端 MVP 就绪 |

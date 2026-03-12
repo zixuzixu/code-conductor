@@ -155,13 +155,19 @@ class WorkerRunner:
         """
         monitor = WorkerMonitor(worktree_path, thread_id)
 
+        # Validate worktree_path is a real directory (prevents path injection)
+        resolved_path = Path(worktree_path).resolve()
+        if not resolved_path.is_dir():
+            logger.error("worker.invalid_path", thread_id=thread_id, path=str(worktree_path))
+            return WorkerResult(exit_code=-1, errors=[f"Invalid worktree path: {worktree_path}"])
+
         cmd = [CLAUDE_CMD, *CLAUDE_ARGS, self.prompt]
-        logger.info("worker.spawn", thread_id=thread_id, cwd=str(worktree_path))
+        logger.info("worker.spawn", thread_id=thread_id, cwd=str(resolved_path))
 
         try:
             proc = await asyncio.create_subprocess_exec(
                 *cmd,
-                cwd=worktree_path,
+                cwd=resolved_path,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )

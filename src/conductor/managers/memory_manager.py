@@ -58,7 +58,11 @@ class MemoryManager:
 
     @staticmethod
     def _progress_path(repo_path: str | Path) -> Path:
-        return Path(repo_path) / "PROGRESS.md"
+        resolved = Path(repo_path).resolve()
+        # Ensure the repo_path is an absolute directory (not a relative path trick)
+        if not resolved.is_absolute():
+            raise ValueError(f"repo_path must be absolute: {repo_path}")
+        return resolved / "PROGRESS.md"
 
     def read_progress(self, repo_path: str | Path) -> str:
         path = self._progress_path(repo_path)

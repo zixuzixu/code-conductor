@@ -2,6 +2,7 @@
 
 import asyncio
 import contextlib
+import re
 from pathlib import Path
 
 import structlog
@@ -9,6 +10,44 @@ import structlog
 from conductor.core.constants import DEFAULT_WORKTREE_DIR
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()
+
+# Allowed characters in git branch names: alphanumeric, -, _, /, .
+# Rejects shell metacharacters, spaces, control chars, .., ~, ^, :, ?, *, [, \
+_SAFE_BRANCH_RE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9._/-]*$")
+_DANGEROUS_BRANCH_PATTERNS = ("..", "~", "^", ":", "?", "*", "[", "\\", " ", "@{")
+
+
+def _validate_branch_name(branch_name: str) -> None:
+    """Validate a branch name to prevent command injection and invalid git refs.
+
+    Raises ValueError if the branch name contains dangerous characters.
+    """
+    if not branch_name or len(branch_name) > 255:
+        raise ValueError(f"Invalid branch name length: {len(branch_name) if branch_name else 0}")
+
+    for pattern in _DANGEROUS_BRANCH_PATTERNS:
+        if pattern in branch_name:
+            raise ValueError(f"Branch name contains forbidden pattern '{pattern}': {branch_name}")
+
+    if not _SAFE_BRANCH_RE.match(branch_name):
+        raise ValueError(f"Branch name contains invalid characters: {branch_name}")
+
+    if branch_name.startswith("-"):
+        raise ValueError(f"Branch name must not start with '-': {branch_name}")
+
+    if branch_name.endswith(".lock") or branch_name.endswith("/"):
+        raise ValueError(f"Branch name has invalid suffix: {branch_name}")
+
+
+def _validate_path_within(path: Path, parent: Path) -> None:
+    """Ensure resolved path is under the expected parent directory.
+
+    Raises ValueError on path traversal attempts.
+    """
+    resolved = path.resolve()
+    parent_resolved = parent.resolve()
+    if not str(resolved).startswith(str(parent_resolved) + "/") and resolved != parent_resolved:
+        raise ValueError(f"Path escapes allowed directory: {resolved} is not under {parent_resolved}")
 
 
 class GitError(Exception):
@@ -54,6 +93,7 @@ class GitManager:
         return await _run_git(["rev-parse", "--abbrev-ref", "HEAD"], cwd=self.repo_path)
 
     async def branch_exists(self, branch_name: str) -> bool:
+        _validate_branch_name(branch_name)
         try:
             await _run_git(["rev-parse", "--verify", branch_name], cwd=self.repo_path)
             return True
@@ -88,9 +128,14 @@ class GitManager:
 
         Returns the absolute worktree path.
         """
+        _validate_branch_name(branch_name)
+
         # Sanitize branch name for filesystem (replace / with -)
         dir_name = branch_name.replace("/", "-")
         worktree_path = self.worktree_base / dir_name
+
+        # Ensure worktree path doesn't escape the repo
+        _validate_path_within(worktree_path, self.worktree_base)
 
         self.worktree_base.mkdir(parents=True, exist_ok=True)
 
@@ -105,6 +150,9 @@ class GitManager:
     async def remove_worktree(self, worktree_path: str | Path, *, delete_branch: bool = True) -> None:
         """Remove a worktree and optionally delete its branch."""
         worktree_path = Path(worktree_path)
+
+        # Ensure worktree path is within expected base directory
+        _validate_path_within(worktree_path, self.worktree_base)
 
         # Get branch name before removal
         branch_name = None
@@ -132,6 +180,9 @@ class GitManager:
 
         Returns the merge commit hash. Raises GitError on conflict.
         """
+        _validate_branch_name(source_branch)
+        _validate_branch_name(target_branch)
+
         current = await self.get_current_branch()
 
         try:
@@ -157,6 +208,7 @@ class GitManager:
         await _run_git(["fetch", "origin"], cwd=self.repo_path)
 
     async def push(self, branch: str = "main", remote: str = "origin") -> None:
+        _validate_branch_name(branch)
         await _run_git(["push", remote, branch], cwd=self.repo_path)
 
     async def commit_in_worktree(self, worktree_path: str | Path, message: str) -> str:

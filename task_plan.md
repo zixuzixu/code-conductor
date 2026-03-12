@@ -4,7 +4,7 @@
 根据 project.md 规格说明，从零实现 Code Conductor：一个基于 Python 的多 Claude Code Worker 编排系统，包含 FastAPI 后端、React 前端、实时 WebSocket 通信和完整的任务生命周期管理。
 
 ## Current Phase
-Phase 6
+Phase 7
 
 ## Phases
 
@@ -92,18 +92,22 @@ Phase 6
 - [x] 测试: 83 tests passed (64 existing + 19 new), ruff check clean
 - **Status:** complete
 
-### Phase 6: React Frontend
-- [ ] Vite + TypeScript + React 项目初始化
-- [ ] Sessions 侧边栏 (多频道，类 Slack)
-- [ ] Chat 面板 (SSE 流式 + WebSocket 接收 Worker 摘要)
-- [ ] Threads 面板 (状态轮询 3s)
-- [ ] Plan 审查清单 UI
-- [ ] Voice 按住说话组件
-- [ ] 草稿持久化 (localStorage per session)
-- [ ] PWA 支持 (manifest.json + Service Worker)
-- [ ] 响应式设计 (移动端竖排堆叠 + 滑动切换)
-- [ ] 构建到 `web/static/`，FastAPI 静态服务
-- **Status:** pending
+### Phase 6: React Frontend (MVP)
+- [x] Vite + TypeScript + React 项目初始化
+- [x] Tailwind CSS v4 + shadcn/ui (dark theme, zinc preset)
+- [x] API 客户端库 (sessions, chat SSE, tasks)
+- [x] React Hooks (useSessions, useChat, useTasks, useWebSocket)
+- [x] Sessions 侧边栏 (Linear 风格, 新建/删除/选择)
+- [x] Chat 面板 (SSE 流式, 自动滚动, Ctrl+Enter 发送)
+- [x] Threads 面板 (优先级色标, 状态轮询 3s, 任务 CRUD)
+- [x] 三栏布局集成 (App.tsx, session 切换, WebSocket 连接)
+- [x] 草稿持久化 (localStorage per session)
+- [x] 构建到 `web/static/`，FastAPI 静态服务
+- [ ] Plan 审查清单 UI (移至 Phase 7)
+- [ ] Voice 按住说话组件 (移至 Phase 7)
+- [ ] PWA 支持 (移至 Phase 7)
+- [ ] 响应式设计 (移至 Phase 7)
+- **Status:** complete
 
 ### Phase 7: Integration, Error Handling & Polish
 - [ ] 合并冲突解决 Worker (§9.3)

@@ -4,7 +4,7 @@ from uuid import UUID
 
 import structlog
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from conductor.api.deps import get_queue_manager, get_session_manager
 from conductor.core.constants import Priority
@@ -19,6 +19,22 @@ class CreateTaskRequest(BaseModel):
     title: str
     description: str = ""
     priority: Priority = Priority.P1
+
+    @field_validator("title")
+    @classmethod
+    def validate_title(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("Title must not be empty")
+        if len(v) > 500:
+            raise ValueError("Title exceeds maximum length of 500 characters")
+        return v
+
+    @field_validator("description")
+    @classmethod
+    def validate_description(cls, v: str) -> str:
+        if len(v) > 50_000:
+            raise ValueError("Description exceeds maximum length of 50000 characters")
+        return v
 
 
 # --- Task queue endpoints ---

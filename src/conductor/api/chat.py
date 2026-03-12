@@ -5,7 +5,7 @@ from uuid import UUID
 import structlog
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from conductor.agents.llm_provider import ChatMessage
 from conductor.api.deps import get_config, get_session_manager
@@ -13,10 +13,21 @@ from conductor.api.deps import get_config, get_session_manager
 router = APIRouter(prefix="/api/chat", tags=["chat"])
 logger = structlog.get_logger()
 
+MAX_CHAT_MESSAGE_LENGTH = 100_000  # 100KB limit per message
+
 
 class ChatRequest(BaseModel):
     session_id: UUID
     message: str
+
+    @field_validator("message")
+    @classmethod
+    def validate_message_length(cls, v: str) -> str:
+        if len(v) > MAX_CHAT_MESSAGE_LENGTH:
+            raise ValueError(f"Message exceeds maximum length of {MAX_CHAT_MESSAGE_LENGTH} characters")
+        if not v.strip():
+            raise ValueError("Message must not be empty")
+        return v
 
 
 def _build_master_agent():

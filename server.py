@@ -1,5 +1,6 @@
 """Code Conductor — FastAPI entry point."""
 
+import re
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -51,7 +52,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 app = FastAPI(title="Code Conductor", version="0.1.0", lifespan=lifespan)
 
-# CORS — allow all origins for local dev
+# CORS — allow all origins for local dev.
+# SECURITY(A04): In production, replace ["*"] with explicit allowed origins
+# e.g. allow_origins=["https://your-domain.com"]
+# allow_credentials=True with allow_origins=["*"] is technically rejected by browsers,
+# but an explicit origin list is still recommended for defense in depth.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -60,15 +65,36 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Regex matching static assets with content hash in filename (e.g. main.a1b2c3d4.js)
+_HASHED_ASSET_RE = re.compile(r"\.[0-9a-f]{8,}\.(js|css|woff2?|ttf|eot|svg|png|jpg|gif|ico|webp)$", re.IGNORECASE)
 
-# No-cache middleware for HTML responses (prevents stale JS bundles)
+
 @app.middleware("http")
-async def no_cache_html(request: Request, call_next):
+async def cache_control_middleware(request: Request, call_next):
+    """Set Cache-Control headers based on resource type.
+
+    Strategy:
+    - HTML files: no-cache (always revalidate to pick up new JS/CSS references)
+    - Hashed static assets (*.abc123.js): long-term immutable cache
+    - API responses (/api/): no-cache (dynamic data)
+    - Everything else: no explicit header (use defaults)
+    """
     response: Response = await call_next(request)
-    if "text/html" in response.headers.get("content-type", ""):
+    path = request.url.path
+    content_type = response.headers.get("content-type", "")
+
+    if "text/html" in content_type:
+        # HTML must always be fresh — references hashed asset URLs
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
+    elif _HASHED_ASSET_RE.search(path):
+        # Content-hashed assets are immutable — cache forever
+        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    elif path.startswith("/api/"):
+        # API responses should not be cached by browsers/proxies
+        response.headers["Cache-Control"] = "no-cache"
+
     return response
 
 
