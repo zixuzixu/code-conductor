@@ -67,6 +67,24 @@
 |-------|------------|
 | async def 不含 yield 是 coroutine 不是 async generator | 需要在 raise 后加 unreachable yield 使其成为 async generator |
 
+## Phase 8: Frontend UX Polish — 分析
+
+### 8.1 日间模式配色现状
+- 当前 `:root` (light mode) 使用的是 shadcn/ui 默认 neutral 配色 — 纯灰色系，无色彩倾向
+- `@theme inline` 块里的颜色是暗色模式（oklch(0.145...) 是接近黑色），body 默认使用这些值
+- 问题：`:root` 下定义了 light 变量，但 `@theme inline` 覆盖为暗色 → body 默认暗色
+- light mode 的 `--background: oklch(1 0 0)` 是纯白，视觉上缺乏层次感
+
+### 8.2 ChatInput 键盘行为现状
+- 当前：`Ctrl+Enter` / `Cmd+Enter` 发送消息
+- Textarea 默认行为：`Enter` 换行
+- 需要反转：`Enter` 发送，`Shift+Enter` 或 `Ctrl+Enter` 换行
+
+### 8.3 Session 创建流程现状
+- 当前：点击 `+` → 出现输入框 → 手动输入名称 → Enter 确认
+- 需要改为：点击 `+` → 自动生成名称 → 立即创建 session
+- 自动名称格式方案：`Session YYYY-MM-DD HH:mm` 或使用 session 序号
+
 ## Resources
 - project.md — 完整规格说明 (396 行)
 - `.yapf` — 代码风格 (Google Style, 2-space indent)

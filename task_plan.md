@@ -4,7 +4,7 @@
 根据 project.md 规格说明，从零实现 Code Conductor：一个基于 Python 的多 Claude Code Worker 编排系统，包含 FastAPI 后端、React 前端、实时 WebSocket 通信和完整的任务生命周期管理。
 
 ## Current Phase
-Complete (all core phases done)
+Complete (Phase 1-8 all done)
 
 ## Phases
 
@@ -160,6 +160,12 @@ Complete (all core phases done)
 | `on_event("startup")` DeprecationWarning | 1 | 改用 lifespan context manager |
 | `ModuleNotFoundError: conductor` | 1 | 添加 hatchling build-system + `[tool.hatch.build.targets.wheel]` |
 | RUF001 全角分号误报 | 1 | `# noqa: RUF001`，中文 prompt 有意为之 |
+
+### Phase 8: Frontend UX Polish
+- [x] 8.1 日间模式配色更新 — 重新设计 `:root` 下的 CSS 变量，使用蓝色调高对比度 light mode 配色 (oklch blue tint)
+- [x] 8.2 Enter 发送消息 / Shift+Enter 换行 — 修改 ChatInput 键盘事件逻辑，反转默认行为
+- [x] 8.3 Session 自动命名 — 点击 `+` 自动生成 `Session YYYY-MM-DD HH:mm` 名称，一键创建
+- **Status:** complete
 
 ## Notes
 - project.md §12.1 描述的 "Completed (MVP)" 是目标功能列表，不是已实现的代码
