@@ -403,7 +403,10 @@ Each Thread's `CLAUDE.md` contains:
 - Draft persistence: unsent message text is saved to localStorage per session (debounced 300ms) and restored on session switch-back or page reload
 
 **Configuration**
-- `~/.code-conductor/config.yaml` is the single source of truth for API keys and settings — no environment variables
+- `~/.code-conductor/config.yaml` stores settings and model configuration
+- API keys are resolved from **environment variables** first, then config file fallback:
+  - `GEMINI_API_KEY` — Google Gemini API key
+  - `KIMI_API_KEY` — Moonshot/Kimi API key
 - Active models: `gemini-3.1-pro-preview` (primary), `kimi-k2.5` (fallback)
 
 ### 12.2 Pending / Not Yet Implemented

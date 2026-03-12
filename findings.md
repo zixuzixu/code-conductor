@@ -65,7 +65,7 @@
 ## Issues Encountered
 | Issue | Resolution |
 |-------|------------|
-| 暂无 | - |
+| async def 不含 yield 是 coroutine 不是 async generator | 需要在 raise 后加 unreachable yield 使其成为 async generator |
 
 ## Resources
 - project.md — 完整规格说明 (396 行)

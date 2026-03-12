@@ -60,11 +60,49 @@
   - tests/{test_git_manager.py, test_session_manager.py, test_memory_manager.py, test_thread_manager.py}
   - src/conductor/managers/__init__.py (updated with exports)
 
+### Phase 3: LLM Providers & Master Agent (MVP)
+- **Status:** complete
+- **Started:** 2026-03-12 23:50
+- **Completed:** 2026-03-13 00:00
+- Actions taken:
+  - LLMProvider ABC: generate/stream/is_available 抽象接口, ChatMessage 数据类, _resolve_kwargs 合并默认参数
+  - GeminiProvider: google-genai SDK, lazy client init, ChatMessage → genai contents 转换 (system → system_instruction, assistant → model)
+  - KimiProvider: openai SDK (AsyncOpenAI), OpenAI-compatible API, 默认 base_url moonshot.cn
+  - MasterAgent: chat() 流式 + generate() 非流式, 自动 failover (primary → fallback), reset_to_primary()
+  - API keys: 环境变量 (GEMINI_API_KEY, KIMI_API_KEY) 优先，config.api_key 作为 fallback
+  - 更新 project.md §12.1 Configuration 段落
+  - 更新 config.py DEFAULT_CONFIG_YAML 注释
+  - 19 个新测试: ABC 不可实例化、API key 解析 (env/config/missing)、消息格式转换、failover 全路径
+  - 修复 1 个 bug: FailingProvider.stream 需要 `yield` 使其成为 async generator
+- Files created:
+  - src/conductor/agents/{llm_provider.py, gemini_provider.py, kimi_provider.py, master_agent.py}
+  - src/conductor/agents/__init__.py (rewritten with exports)
+  - tests/test_llm_providers.py
+- Files modified:
+  - project.md, src/conductor/core/config.py, pyproject.toml
+
+### Phase 4: Queue Manager & Worker Lifecycle
+- **Status:** complete
+- **Started:** 2026-03-13 00:05
+- **Completed:** 2026-03-13 00:15
+- Actions taken:
+  - QueueManager: 优先级队列 (P0>P1>P2), 原子 JSON 持久化 (tmp+replace), 文件锁, push/pop/requeue/recover
+  - WorkerRunner: 启动 Claude Code CLI subprocess, 流式读取 NDJSON, WorkerResult 聚合
+  - WorkerMonitor: 6 类信号检测 (思考超时 180s, 无输出 120s, 重复错误 3x, 路径逃逸, 错误状态, 测试失败)
+  - SessionDispatcher: 后台 asyncio task, 并发 Worker 上限, 9 步生命周期, 崩溃恢复
+  - 修复: `callable | None` 在 Python 3.10 不合法 (callable 是函数不是类型), 改用 `object | None`
+  - 19 个新测试全通过
+- Files created:
+  - src/conductor/managers/{queue_manager.py, worker_runner.py, session_dispatcher.py}
+  - tests/{test_queue_manager.py, test_worker_runner.py}
+- Files modified:
+  - src/conductor/managers/__init__.py (新增 exports)
+
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 2 complete, Phase 3 pending |
-| Where am I going? | 7 个阶段：Scaffolding → Git/Session → LLM → Queue/Worker → API → Frontend → Integration |
+| Where am I? | Phase 4 complete, Phase 5 (API Routes) pending |
+| Where am I going? | Phase 5 (API) → Phase 6 (Frontend) → Phase 7 (Integration) |
 | What's the goal? | 从零实现 Code Conductor 多 Agent 编排系统 |
-| What have I learned? | contextlib.suppress 替代 try/except/pass; git worktree 需要至少一个 commit; symlink 需在 worktree 删除前清理 |
-| What have I done? | Phase 1 (scaffolding) + Phase 2 (managers) 完成，26 tests 全通过 |
+| What have I learned? | callable 是 builtin 函数不是类型, 不能用 `\|` 语法; asyncio.create_task 返回值必须存储 (RUF006); `not in` 优于 `not x in y` |
+| What have I done? | Phase 1-4 完成，64 tests 全通过，后端核心逻辑就绪 |

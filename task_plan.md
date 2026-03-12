@@ -4,7 +4,7 @@
 根据 project.md 规格说明，从零实现 Code Conductor：一个基于 Python 的多 Claude Code Worker 编排系统，包含 FastAPI 后端、React 前端、实时 WebSocket 通信和完整的任务生命周期管理。
 
 ## Current Phase
-Phase 3
+Phase 5
 
 ## Phases
 
@@ -47,25 +47,36 @@ Phase 3
 - [x] 2.6 测试: 26 tests passed (6 git + 6 session + 9 memory + 5 thread)
 - **Status:** complete
 
-### Phase 3: LLM Providers & Master Agent
-- [ ] `LLMProvider` 抽象基类
-- [ ] `GeminiProvider` — Gemini 3.1 Pro API 集成 + 流式输出
-- [ ] `KimiProvider` — Kimi k2.5 备用模型
-- [ ] 自动故障转移 (Primary → Fallback)
-- [ ] `MasterAgent` — 用户交互、任务分类 (P0/P1/P2)、对话摘要
-- [ ] Memory update 机制（Master 在回复中附带 memory_update 字段）
+### Phase 3: LLM Providers & Master Agent (MVP)
+- [x] `LLMProvider` 抽象基类 (ABC, generate/stream/is_available)
+- [x] `GeminiProvider` — google-genai SDK, 环境变量 GEMINI_API_KEY 优先
+- [x] `KimiProvider` — openai SDK (OpenAI-compatible), 环境变量 KIMI_API_KEY 优先
+- [x] 自动故障转移 (Primary → Fallback, MasterAgent.chat 内自动切换)
+- [x] `MasterAgent` MVP — 接收消息 → 调用 LLM → 返回流式回复 + failover
+- [x] project.md 更新: API keys 改用环境变量
+- [x] 测试: 45 tests passed (26 existing + 19 new), ruff check clean
+- **Status:** complete
+
+### Phase 3b: Master Agent 完整版 (TODO)
+- [ ] 任务分类 (P0/P1/P2) — Master 从用户消息中提取任务并分类优先级
+- [ ] 对话摘要 — 压缩历史消息，保留最近 ~10 轮
+- [ ] Memory update 机制 — Master 回复中附带 memory_update 字段，自动更新 MEMORY.md
+- [ ] Worker 结果审查 — Accept/Reject/Partial 循环
 - **Status:** pending
 
 ### Phase 4: Queue Manager & Worker Lifecycle
-- [ ] `QueueManager` — 优先级队列 (P0>P1>P2)、原子 JSON 持久化 (`os.replace`)
-- [ ] `SessionDispatcher` — 每个 Session 的后台消费循环
-- [ ] Worker 9 步生命周期实现 (Claim → Worktree → Setup → Execute → Commit → Merge+Test → Conflict? → Push → Cleanup)
-- [ ] CLAUDE.md 模板系统（默认指令 + 任务描述 + 会话上下文）
-- [ ] NDJSON 日志解析 & Manager 监控层（6 类信号检测）
-- [ ] Worker 完成处理：Master 审查 → Accept/Reject/Partial
-- [ ] Quota 耗尽处理 (PENDING_QUOTA 状态)
-- [ ] 崩溃恢复：重启后 IN_PROGRESS 任务重新入队
-- **Status:** pending
+- [x] `QueueManager` — 优先级队列 (P0>P1>P2)、原子 JSON 持久化 (`os.replace`)、文件锁
+- [x] `WorkerRunner` — 启动 Claude Code CLI、解析 NDJSON 输出、WorkerResult 聚合
+- [x] `WorkerMonitor` — 6 类信号检测 (思考超时、重复错误、无输出、路径逃逸、错误状态、测试失败)
+- [x] `SessionDispatcher` — 每个 Session 的后台消费循环、并发 Worker 上限控制
+- [x] Worker 9 步生命周期实现 (Claim → Worktree → Setup → Execute → Commit → Merge → Conflict? → Push → Cleanup)
+- [x] CLAUDE.md 模板系统 (Phase 2 ThreadManager 已实现)
+- [x] NDJSON 日志解析 & Manager 监控层
+- [x] 崩溃恢复：QueueManager.recover_in_progress() 重启后 IN_PROGRESS 任务重新入队
+- [ ] Worker 完成处理：Master 审查 → Accept/Reject/Partial (移至 Phase 3b)
+- [ ] Quota 耗尽处理 PENDING_QUOTA (移至 Phase 7 Polish)
+- [x] 测试: 64 tests passed (45 existing + 10 queue + 9 worker), ruff check clean
+- **Status:** complete
 
 ### Phase 5: API Routes & WebSockets
 - [ ] REST API: `/api/sessions` CRUD
@@ -125,6 +136,10 @@ Phase 3
 | pytest + pytest-asyncio | 现代 Python 测试标准 |
 | LLMProvider 用 ABC | 需要运行时强制检查，Provider 数量有限 |
 | 异步子进程 asyncio.create_subprocess_exec | 避免阻塞事件循环 |
+| API keys: 环境变量优先 | 安全标准做法，config.yaml 作为 fallback |
+| Gemini SDK: google-genai | 官方新 SDK，简洁 API |
+| Kimi SDK: openai | OpenAI 兼容格式，官方 SDK 最稳定 |
+| Phase 3 先做 MVP | 最小可用路径优先，完整版 (3b) 后续补充 |
 
 ## Errors Encountered
 | Error | Attempt | Resolution |

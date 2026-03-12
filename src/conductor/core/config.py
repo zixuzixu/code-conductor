@@ -9,7 +9,8 @@ from conductor.core.models import ConductorConfig
 
 DEFAULT_CONFIG_YAML = """\
 # Code Conductor Configuration
-# This file is the single source of truth for API keys and settings.
+# API keys: set GEMINI_API_KEY and KIMI_API_KEY environment variables.
+# The api_key fields below are fallbacks if env vars are not set.
 
 primary_llm:
   provider: gemini
