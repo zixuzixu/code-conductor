@@ -107,3 +107,12 @@ export async function deleteTask(sessionId: string, taskId: string): Promise<voi
   });
   if (!res.ok) throw new Error(`DELETE /tasks: ${res.status}`);
 }
+
+// --- Dispatch control ---
+export async function resumeDispatch(sessionId: string): Promise<{ was_paused: boolean; is_paused: boolean }> {
+  const res = await fetch(`${BASE}/api/threads/dispatch/${sessionId}/resume`, {
+    method: "POST",
+  });
+  if (!res.ok) throw new Error(`POST /dispatch/resume: ${res.status}`);
+  return res.json();
+}

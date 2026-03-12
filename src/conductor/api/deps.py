@@ -27,3 +27,12 @@ def get_queue_manager() -> QueueManager:
 @lru_cache
 def get_memory_manager() -> MemoryManager:
     return MemoryManager()
+
+
+# Registry of active dispatchers — keyed by str(session_id)
+_dispatchers: dict[str, object] = {}
+
+
+def get_dispatchers() -> dict[str, object]:
+    """Return the global dispatcher registry."""
+    return _dispatchers

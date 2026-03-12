@@ -1,6 +1,5 @@
 """Tests for SessionDispatcher quota handling."""
 
-import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
@@ -94,3 +93,38 @@ async def test_resume_dispatch_after_quota_pause(dispatcher):
     dispatcher._running = True
     dispatcher.resume_dispatch()
     assert not dispatcher._paused
+
+
+@pytest.mark.asyncio
+async def test_quota_callback_invoked_on_exhaustion(dispatcher):
+    """When quota retries are exhausted, the on_quota_exhausted callback fires."""
+    task = _make_task()
+    thread = MagicMock(spec=Thread)
+    thread.id = uuid4()
+    thread.worktree_path = "/tmp/wt"
+    thread.status = ThreadStatus.RUNNING
+
+    dispatcher.thread_mgr.create_thread.return_value = thread
+    dispatcher.thread_mgr.setup_thread.return_value = thread
+
+    fail_result = WorkerResult(exit_code=1, quota_exhausted=True, errors=["rate limit"])
+    dispatcher.worker_runner.run = AsyncMock(return_value=fail_result)
+
+    callback = AsyncMock()
+    dispatcher.set_quota_callback(callback)
+
+    with patch("asyncio.sleep", new_callable=AsyncMock):
+        await dispatcher._execute_task(task)
+
+    callback.assert_awaited_once()
+    args = callback.call_args[0]
+    assert args[0] == dispatcher.session.id
+    assert args[1] == task
+
+
+@pytest.mark.asyncio
+async def test_set_quota_callback(dispatcher):
+    """set_quota_callback stores the callback."""
+    cb = AsyncMock()
+    dispatcher.set_quota_callback(cb)
+    assert dispatcher._on_quota_exhausted is cb

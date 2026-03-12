@@ -71,3 +71,23 @@ async def delete_task(session_id: UUID, task_id: UUID):
     queue = get_queue_manager()
     if not queue.remove_task(session_id, task_id):
         raise HTTPException(404, "Task not found")
+
+
+@router.post("/dispatch/{session_id}/resume", status_code=200)
+async def resume_dispatch(session_id: UUID):
+    """Resume a session's dispatch loop after quota pause.
+
+    Returns the session's paused status after the operation.
+    """
+    from conductor.api.deps import get_dispatchers
+
+    dispatchers = get_dispatchers()
+    key = str(session_id)
+    if key not in dispatchers:
+        raise HTTPException(404, "No active dispatcher for this session")
+
+    dispatcher = dispatchers[key]
+    was_paused = dispatcher.is_paused
+    dispatcher.resume_dispatch()
+    logger.info("api.dispatch.resumed", session_id=key, was_paused=was_paused)
+    return {"session_id": key, "was_paused": was_paused, "is_paused": dispatcher.is_paused}

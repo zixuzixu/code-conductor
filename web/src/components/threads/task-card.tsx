@@ -20,6 +20,7 @@ const statusColors: Record<string, string> = {
   completed: "bg-green-500/20 text-green-400",
   failed: "bg-red-500/20 text-red-400",
   pending_review: "bg-purple-500/20 text-purple-400",
+  pending_quota: "bg-orange-500/20 text-orange-400",
 };
 
 export function TaskCard({ task, onDelete }: TaskCardProps) {

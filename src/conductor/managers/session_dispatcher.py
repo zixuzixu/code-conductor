@@ -5,6 +5,8 @@ The dispatcher implements the 9-step Worker lifecycle (§5.1).
 """
 
 import asyncio
+from collections.abc import Callable
+from typing import Any
 
 import structlog
 
@@ -53,6 +55,11 @@ class SessionDispatcher:
         self._task: asyncio.Task | None = None
         self._paused = False
         self._quota_backoff_delays = [30, 60, 120]  # seconds
+        self._on_quota_exhausted: Callable[..., Any] | None = None
+
+    def set_quota_callback(self, callback: Callable[..., Any]) -> None:
+        """Set a callback to be invoked when quota exhaustion pauses dispatch."""
+        self._on_quota_exhausted = callback
 
     @property
     def active_count(self) -> int:
@@ -200,6 +207,13 @@ class SessionDispatcher:
             task.error_context = "Quota exhausted after retries"
             self.queue.update_task(self.session.id, task)
             logger.error("dispatcher.quota_paused", session_id=str(self.session.id))
+
+            # Broadcast quota exhaustion event via WebSocket
+            if self._on_quota_exhausted:
+                try:
+                    await self._on_quota_exhausted(self.session.id, task)
+                except Exception as e:
+                    logger.warning("dispatcher.quota_broadcast_failed", error=str(e))
 
         return result
 

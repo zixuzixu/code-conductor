@@ -44,3 +44,16 @@ def test_broadcast_thread_event():
     from conductor.api.websockets import broadcast_thread_event
 
     asyncio.run(broadcast_thread_event(UUID("00000000-0000-0000-0000-000000000001"), {"type": "test"}))
+
+
+def test_broadcast_quota_event():
+    """Test that broadcast_quota_event builds correct event payload."""
+    import asyncio
+    from types import SimpleNamespace
+    from uuid import UUID
+
+    from conductor.api.websockets import broadcast_quota_event
+
+    task = SimpleNamespace(id=UUID("00000000-0000-0000-0000-000000000002"), title="test task")
+    # Should not crash with no connected clients
+    asyncio.run(broadcast_quota_event(UUID("00000000-0000-0000-0000-000000000001"), task))

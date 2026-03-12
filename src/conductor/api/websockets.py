@@ -50,6 +50,18 @@ async def broadcast_thread_event(thread_id: UUID, event: dict) -> None:
         conns.discard(ws)
 
 
+async def broadcast_quota_event(session_id: UUID, task: object) -> None:
+    """Broadcast a quota exhaustion event to session subscribers."""
+    event = {
+        "type": "quota_exhausted",
+        "session_id": str(session_id),
+        "task_id": str(getattr(task, "id", "")),
+        "task_title": str(getattr(task, "title", "")),
+        "message": "API quota exhausted — dispatch paused. Resume when quota resets.",
+    }
+    await broadcast_session_event(session_id, event)
+
+
 @router.websocket("/ws/sessions/{session_id}")
 async def session_websocket(websocket: WebSocket, session_id: UUID):
     """Session-level WebSocket — receives worker completion summaries, status updates."""
