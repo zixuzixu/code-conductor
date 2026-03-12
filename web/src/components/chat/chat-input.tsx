@@ -38,11 +38,11 @@ export function ChatInput({ onSend, disabled, sessionId }: ChatInputProps) {
   return (
     <div className="flex items-end gap-2 border-t border-border p-4">
       <Textarea
-        placeholder={sessionId ? "Type a message... (Ctrl+Enter to send)" : "Select a session first"}
+        placeholder={sessionId ? "Type a message... (Enter to send, Shift+Enter for newline)" : "Select a session first"}
         value={draft}
         onChange={(e) => handleChange(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+          if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
             e.preventDefault();
             handleSend();
           }

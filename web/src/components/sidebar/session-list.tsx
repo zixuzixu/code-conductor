@@ -1,11 +1,15 @@
 import { Plus } from "lucide-react";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import type { Session } from "@/lib/api";
 import { SessionItem } from "./session-item";
+
+function generateSessionName(): string {
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `Session ${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+}
 
 interface SessionListProps {
   sessions: Session[];
@@ -16,14 +20,8 @@ interface SessionListProps {
 }
 
 export function SessionList({ sessions, activeId, onSelect, onCreate, onDelete }: SessionListProps) {
-  const [creating, setCreating] = useState(false);
-  const [newName, setNewName] = useState("");
-
   const handleCreate = () => {
-    if (!newName.trim()) return;
-    onCreate(newName.trim());
-    setNewName("");
-    setCreating(false);
+    onCreate(generateSessionName());
   };
 
   return (
@@ -34,27 +32,12 @@ export function SessionList({ sessions, activeId, onSelect, onCreate, onDelete }
           variant="ghost"
           size="icon"
           className="h-7 w-7 text-sidebar-foreground"
-          onClick={() => setCreating(!creating)}
+          onClick={handleCreate}
         >
           <Plus className="h-4 w-4" />
         </Button>
       </div>
       <Separator />
-      {creating && (
-        <div className="px-3 py-2">
-          <Input
-            autoFocus
-            placeholder="Session name..."
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleCreate();
-              if (e.key === "Escape") setCreating(false);
-            }}
-            className="h-8 text-sm"
-          />
-        </div>
-      )}
       <ScrollArea className="flex-1 px-2 py-1">
         <div className="space-y-0.5">
           {sessions.map((s) => (
