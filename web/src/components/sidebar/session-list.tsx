@@ -1,9 +1,10 @@
-import { Plus } from "lucide-react";
+import { Plus, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import type { Session } from "@/lib/api";
 import { SessionItem } from "./session-item";
+import { useTheme } from "@/hooks/use-theme";
 
 function generateSessionName(): string {
   const now = new Date();
@@ -20,6 +21,7 @@ interface SessionListProps {
 }
 
 export function SessionList({ sessions, activeId, onSelect, onCreate, onDelete }: SessionListProps) {
+  const { resolved, toggle } = useTheme();
   const handleCreate = () => {
     onCreate(generateSessionName());
   };
@@ -28,14 +30,25 @@ export function SessionList({ sessions, activeId, onSelect, onCreate, onDelete }
     <div className="flex h-full w-full flex-col border-r border-border bg-sidebar-background lg:w-60">
       <div className="flex items-center justify-between px-4 py-3">
         <h2 className="text-sm font-semibold text-sidebar-foreground">Sessions</h2>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 text-sidebar-foreground"
-          onClick={handleCreate}
-        >
-          <Plus className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-sidebar-foreground"
+            onClick={toggle}
+            title={resolved === "light" ? "Switch to dark mode" : "Switch to light mode"}
+          >
+            {resolved === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-sidebar-foreground"
+            onClick={handleCreate}
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
       <Separator />
       <ScrollArea className="flex-1 px-2 py-1">

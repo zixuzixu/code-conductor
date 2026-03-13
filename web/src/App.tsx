@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { MessageSquare, ListTodo, Menu } from "lucide-react";
+import { MessageSquare, ListTodo, Menu, Sun, Moon } from "lucide-react";
 import { SessionList } from "@/components/sidebar/session-list";
 import { ChatPanel } from "@/components/chat/chat-panel";
 import { ThreadPanel } from "@/components/threads/thread-panel";
@@ -11,10 +11,12 @@ import { useChat } from "@/hooks/use-chat";
 import { useTasks } from "@/hooks/use-tasks";
 import { usePlans } from "@/hooks/use-plans";
 import { useWebSocket } from "@/hooks/use-websocket";
+import { useTheme } from "@/hooks/use-theme";
 
 type MobilePanel = "sessions" | "chat" | "tasks";
 
 function App() {
+  const { resolved, toggle } = useTheme();
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [quotaPaused, setQuotaPaused] = useState(false);
   const [mobilePanel, setMobilePanel] = useState<MobilePanel>("chat");
@@ -80,7 +82,7 @@ function App() {
   return (
     <div className="flex h-screen flex-col bg-background text-foreground lg:flex-row">
       {/* Desktop: always visible sidebar; Mobile: shown when mobilePanel === "sessions" */}
-      <div className={`${mobilePanel === "sessions" ? "flex" : "hidden"} lg:flex`}>
+      <div className={`${mobilePanel === "sessions" ? "flex" : "hidden"} flex-col lg:flex`}>
         <SessionList
           sessions={sessions}
           activeId={activeSessionId}
@@ -124,6 +126,14 @@ function App() {
 
       {/* Mobile bottom tab bar */}
       <nav className="flex shrink-0 items-center justify-around border-t border-border bg-sidebar-background px-2 py-1 lg:hidden">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-1.5"
+          onClick={toggle}
+        >
+          {resolved === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+        </Button>
         <Button
           variant={mobilePanel === "sessions" ? "secondary" : "ghost"}
           size="sm"
